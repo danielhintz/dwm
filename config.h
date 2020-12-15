@@ -46,7 +46,7 @@ static const Rule rules[] = {
      *	WM_CLASS(STRING) = instance, class
      *	WM_NAME(STRING) = title
      */
-    /* class      instance    title       tags mask     isfloating   canfocus   monitor */
+    /* class      instance    title       tags mask     isfloating    isterminal  noswallow  canfocus   monitor */
     {"Steam", "Steam", NULL, 1 << 4, 0, 0, 0, 1, 0},
     {"dota2", "dota2", NULL, 1 << 5, 0, 0, 0, 1, 0},
     {"discord", NULL, "Discord", 1 << 2, 0, 0, 0, 1, -1},
