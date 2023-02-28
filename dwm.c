@@ -1097,8 +1097,7 @@ void focusstack(const Arg* arg)
         return;
 
     for (p = NULL, c = selmon->clients; c && (i || !ISVISIBLE(c) || !c->canfocus);
-         i -= ISVISIBLE(c) ? 1 : 0, p = c, c = c->next)
-        ;
+         i -= ISVISIBLE(c) ? 1 : 0, p = c, c = c->next);
     focus(c ? c : p);
     restack(selmon);
     if (selmon->sel)
@@ -2031,8 +2030,8 @@ void showhide(Client* c)
     {
         if ((c->tags & SPTAGMASK) && c->isfloating)
         {
-            c->x = c->mon->wx + (c->mon->ww / 2 - WIDTH(c) / 2);
-            c->y = c->mon->wy + (c->mon->wh / 2 - HEIGHT(c) / 2);
+            /*c->x = c->mon->wx + (c->mon->ww / 2 - WIDTH(c) / 2);*/
+            /*c->y = c->mon->wy + (c->mon->wh / 2 - HEIGHT(c) / 2);*/
         }
         /* show clients top down */
         XMoveWindow(dpy, c->win, c->x, c->y);

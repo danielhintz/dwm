@@ -47,21 +47,24 @@ static const Rule rules[] = {
      *	WM_NAME(STRING) = title
      */
     /* class      instance    title       tags mask     isfloating    isterminal  noswallow  canfocus   monitor */
-    {"Steam", "Steam", NULL, 1 << 4, 0, 0, 0, 1, 0},
-    {"dota2", "dota2", NULL, 1 << 5, 0, 0, 0, 1, 0},
     {"discord", NULL, "Discord", 1 << 2, 0, 0, 0, 1, -1},
     {"ProtonMail Bridge", "protonmail-bridge", "ProtonMail Bridge", 0, 1, 0, 0, 1, -1},
     {"St", NULL, NULL, 0, 0, 1, 0, 1, -1},
     {NULL, NULL, "Microsoft Teams Notification", 0, 1, 0, 0, 0, -1},
-
-    {NULL, NULL, "go-twitch-cli", 0, 0, 0, 1, 1, -1},
+    {"Microsoft Teams - Preview", NULL, NULL, 1, 0, 0, 0, 1, 1},
+    {NULL, NULL, "newsboat", 1<<2, 0, 0, 0, 1, 1},
+    {NULL, NULL, "go-twitch-cli", 1<<1, 0, 0, 1, 1, 1},
+    {NULL, NULL, "Event Tester", 0, 0, 0, 1, 1, -1},
+    {NULL, NULL, "FreeRDP: 172.20.237.92", 1<<1, 0, 0, 1, 1, 0},
+    {NULL, NULL, "sshpass", 1<<0, 0, 0, 1, 1, 0},
+    {NULL, NULL, "Signal", 1<<4, 0, 0, 1, 1, 0},
     {NULL, "spterm", NULL, SPTAG(0), 1, 1, 0, 1, -1},
     {NULL, "spcalc", NULL, SPTAG(1), 1, 1, 0, 1, -1},
 };
 
 
 /* layout(s) */
-static const float mfact = 0.55;  /* factor of master area size [0.05..0.95] */
+static const float mfact = 0.50;  /* factor of master area size [0.05..0.95] */
 static const int nmaster = 1;     /* number of clients in master area */
 static const int resizehints = 1; /* 1 means respect size hints in tiled resizals */
 #define FORCE_VSPLIT 1            /* nrowgrid layout: force two clients to always split vertically */
@@ -169,12 +172,30 @@ void changevolume(const Arg* arg)
     }
 }
 
+int length(Monitor* m)
+{
+    int i = 0;
+    while(m)
+    {
+        m = m->next;
+        ++i;
+    }
+    return i;
+}
+
 void focustomon(const Arg* arg)
 {
-    unsigned int i = 0;
+    int currentmon = 0;
+    int l = length(mons);
+    for (Monitor* m = mons; m; m = m->next, ++currentmon)
+        if (m == selmon) break;
+    int next = currentmon + arg->i;
+    if (next >= l) return;
+    if (next < 0) return;
+    int i = 0;
     for (Monitor* m = mons; m; m = m->next, i++)
     {
-        if (i == arg->ui)
+        if (i == next)
         {
             if (selmon->sel)
                 unfocus(selmon->sel, 0);
@@ -195,12 +216,19 @@ void focustomon(const Arg* arg)
 
 void movetomon(const Arg* arg)
 {
-    unsigned int i = 0;
+    int currentmon = 0;
     if (!selmon->sel)
         return;
+    int l = length(mons);
+    for (Monitor* m = mons; m; m = m->next, ++currentmon)
+        if (m == selmon) break;
+    int next = currentmon + arg->i;
+    if (next >= l) return;
+    if (next < 0) return;
+    int i = 0;
     for (Monitor* m = mons; m; m = m->next, i++)
     {
-        if (i == arg->ui)
+        if (i == next)
         {
             char isfull = selmon->sel->isfullscreen;
             if (isfull)
@@ -258,11 +286,6 @@ static const char* dmenuunicode[] = {"echo /home/hintz3y/.config/emoji | dmenu",
                                      "-sf",
                                      selfgcolor,
                                      NULL};
-static const char* termcmd[] = {"st", NULL};
-
-static const char* termcwd[] = {"samedir", NULL};
-
-
 #include <X11/XF86keysym.h>
 
 #include "movestack.c"
@@ -274,7 +297,7 @@ static Key keys[] = {
     {MODKEY | ShiftMask, XK_q, killclient, {.i = 1}},
 
     {MODKEY, XK_w, spawn, SHCMD("$BROWSER")},
-    {MODKEY | ShiftMask, XK_w, spawn, SHCMD("st -e rtv --enable-media")},
+    {MODKEY | ShiftMask, XK_w, spawn, SHCMD("$BROWSER --target private-window")},
 
     {MODKEY, XK_e, spawn, SHCMD("st -e neomutt; pkill -RTMIN+12 dwmblocks")},
     //{ MODKEY|ShiftMask,			XK_e,		spawn,	{.v = NULL} },
@@ -284,30 +307,32 @@ static Key keys[] = {
 
     {MODKEY, XK_t, spawn, SHCMD("st -e go-twitch-cli 2>>~/.cache/go-streamlink/log")},
     {MODKEY | ShiftMask, XK_t, spawn, SHCMD("st -e watch transmission-remote -l")},
+    {MODKEY | ControlMask | ShiftMask, XK_t, spawn, SHCMD("transadd \"$(xclip -selection clipboard -o)\"")},
 
     //{MODKEY, XK_y, spawn, SHCMD("st -e calcurse -D ~/.local/share/calcurse -C ~/.config/calcurse")},
     //{ MODKEY|ShiftMask,			XK_y,		spawn,	{.v = calcurse} },
-    {MODKEY, XK_y, spawn, SHCMD("teams")},
+    {MODKEY, XK_y, spawn, SHCMD("teams --no-sandbox")},
     {MODKEY | ShiftMask, XK_y, spawn, SHCMD("pkill teams")},
 
-    //{ MODKEY,						XK_u,		spawn,	{.v = NULL} },
-    //{ MODKEY|ShiftMask,			XK_u,		spawn,	{.v = NULL} },
+    {MODKEY, XK_u, spawn, SHCMD("")},
+    {MODKEY | ShiftMask, XK_u, spawn, SHCMD("")},
 
-    {MODKEY, XK_i, spawn, SHCMD("st -e gotop")},
+    {MODKEY, XK_i, spawn, SHCMD("st -e htop")},
     //{ MODKEY|ShiftMask,			XK_i,		spawn,	{.v = htopcmd} },
 
-    //{ MODKEY,						XK_o,		incnmaster,	{.i = -1 } },
+    {MODKEY, XK_o, spawn, SHCMD("get-quote")},
     {MODKEY | ShiftMask, XK_o, incnmaster, {.i = -1}},
 
     {MODKEY, XK_p, spawn, SHCMD("st -e playground")},
-    {MODKEY | ShiftMask, XK_p, spawn, SHCMD("passmenu")},
+    {MODKEY | ShiftMask, XK_p, spawn, SHCMD("passmenu -l 10")},
 
     // Second Row
     {MODKEY | ShiftMask, XK_a, spawn, SHCMD("authy")},
     {MODKEY, XK_a, spawn, SHCMD("st -e pulsemixer")},
 
     {MODKEY, XK_s, togglescratch, {.ui = 0}},
-    {MODKEY | ShiftMask, XK_s, togglescratch, {.ui = 1}},
+    {MODKEY | ShiftMask | ControlMask, XK_s, togglescratch, {.ui = 1}},
+    {MODKEY | ShiftMask, XK_s, spawn, SHCMD("maim -s | xclip -selection clipboard -t image/png")},
 
     {MODKEY, XK_d, spawn, {.v = dmenucmd}},
     //{ MODKEY|ShiftMask,			XK_d,		spawn,	{.v = dmenucmd} },
@@ -315,11 +340,11 @@ static Key keys[] = {
     {MODKEY, XK_f, togglefullscreen, {0}},
     //{ MODKEY|ShiftMask,			XK_f,		togglefullscreen,	{0} },
 
-    {MODKEY, XK_g, spawn, SHCMD("steam")},
-    {MODKEY | ShiftMask, XK_g, spawn, SHCMD("sudo killall steam")},
+    //{MODKEY, XK_g, spawn, SHCMD("playmovie")},
+    //{MODKEY | ShiftMask, XK_g, spawn, SHCMD("sudo killall steam")},
 
-    {MODKEY, XK_h, focustomon, {.ui = 0}},
-    {MODKEY | ShiftMask, XK_h, movetomon, {.ui = 0}},
+    {MODKEY, XK_h, focustomon, {.i = -1}},
+    {MODKEY | ShiftMask, XK_h, movetomon, {.i = -1}},
 
     {MODKEY, XK_j, focusstack, {.i = +1 + 2000}},
     {MODKEY | ShiftMask, XK_j, movestack, {.i = +1}},
@@ -327,8 +352,8 @@ static Key keys[] = {
     {MODKEY, XK_k, focusstack, {.i = -1 + 2000}},
     {MODKEY | ShiftMask, XK_k, movestack, {.i = -1}},
 
-    {MODKEY, XK_l, focustomon, {.ui = 1}},
-    {MODKEY | ShiftMask, XK_l, movetomon, {.ui = 1}},
+    {MODKEY, XK_l, focustomon, {.i = 1}},
+    {MODKEY | ShiftMask, XK_l, movetomon, {.i = 1}},
 
     //{ MODKEY,						XK_i,		incnmaster,	{.i = +1 } },
     {MODKEY | ShiftMask, XK_i, incnmaster, {.i = +1}},
@@ -337,42 +362,33 @@ static Key keys[] = {
     // Third Row
 
     // Unused
-    //{ MODKEY,						XK_z,		spawn,	{.v = NULL } },
-    //{ MODKEY|ShiftMask,			XK_z,		spawn,	{.v = NULL } },
+    //{MODKEY, XK_z, spawn, SHCMD("playshow")},
+    //{MODKEY | ShiftMask, XK_z, spawn, SHCMD("playshow -b")},
 
     {MODKEY, XK_x, spawn, SHCMD("sudo killall gpg-agent")},
     {MODKEY | ShiftMask, XK_x, spawn, SHCMD("sudo killall gpg-agent; slock; mw -Y")},
 
-    {MODKEY, XK_c, spawn, SHCMD("discord-canary")},
-    {MODKEY | ShiftMask, XK_c, spawn, SHCMD("sudo killall DiscordCanary")},
+    {MODKEY, XK_c, spawn, SHCMD("discord")},
+    {MODKEY | ShiftMask, XK_c, spawn, SHCMD("pkill -f discord")},
 
-    // Unused
-    //{ MODKEY,						XK_v,		spawn,	{.v = NULL} },
-    //{ MODKEY|ShiftMask,			XK_v,		spawn,	{.v = NULL} },
+    {MODKEY, XK_v, spawn, SHCMD("randommouse")},
+    {MODKEY | ShiftMask, XK_v, spawn, SHCMD("pkill randommouse")},
 
-    //{ MODKEY,						XK_b,		spawn,	{.v = NULL} },
-    {MODKEY | ShiftMask, XK_b, togglebar, {0}},
+    {MODKEY, XK_b, spawn, SHCMD("btc")},
+    {MODKEY | ShiftMask, XK_b, spawn, SHCMD("btd")},
 
     {MODKEY, XK_n, spawn, SHCMD("st -e newsboat")},
     //{ MODKEY|ShiftMask,				XK_n,		nextlayout,	{.i = -1}},
 
     // Side mouse button
-    {0,
-     XK_KP_0,
-     spawn,
-     SHCMD(
-         "pulsemixer --id $(pulsemixer --list-sources | grep Default | awk '{print $3}' | sed 's/,//g') --toggle-mute; "
-         "pkill -RTMIN+11 $STATUSBAR")},
+    {0, XK_F13, spawn, SHCMD("toggle-mute")},
     {ShiftMask,
      XK_KP_0,
      spawn,
      SHCMD("pulsemixer --id $(pulsemixer --list-sinks | grep Default | awk '{print $3}' | sed 's/,//g') --toggle-mute; "
            "pkill -RTMIN+11 $STATUSBAR")},
-    //{MODKEY,
-    // XK_m,
-    // spawn,
-    // SHCMD("pulsemixer --id $(pulsemixer --list-sinks | grep Default | awk '{print $3}' | sed 's/,//g') --toggle-mute;
-    // " "pkill -RTMIN+11 $STATUSBAR")},
+    {MODKEY, XK_m, spawn, SHCMD("apple-music-electron")},
+    {MODKEY | ShiftMask, XK_m, spawn, SHCMD("pkill apple-music-ele")},
     //{MODKEY | ShiftMask,
     // XK_m,
     // spawn,
@@ -386,12 +402,12 @@ static Key keys[] = {
     {MODKEY, XK_minus, changemasterfact, {.f = -0.05}},
 
 
-    {MODKEY, XK_grave, spawn, SHCMD("dmenuunicode")},
+    {MODKEY, XK_semicolon, spawn, SHCMD("dmenuunicode")},
 
     {MODKEY, XK_space, zoom, {0}},
     {MODKEY | ShiftMask, XK_space, togglefloating, {0}},
 
-    {MODKEY, XK_Return, spawn, SHCMD("st")},
+    {MODKEY, XK_Return, spawn, SHCMD("$TERMINAL")},
     {MODKEY | ShiftMask, XK_Return, spawn, SHCMD("samedir")},
 
 
@@ -422,8 +438,16 @@ static Key keys[] = {
     {MODKEY, XK_F5, xrdb, {.v = NULL}},
 
     {MODKEY, XK_F7, spawn, SHCMD("vpn-toggle")},
-    {MODKEY | ShiftMask, XK_F7, spawn, SHCMD("stopvpn; st -e sudo openvpn ~/dox/work/dhintz.ovpn")},
-    {MODKEY, XK_F8, spawn, SHCMD("mw -Y")},
+    {MODKEY | ShiftMask, XK_F7, spawn, SHCMD("tmux new -ds workvpn sudo openvpn ~/dox/work/dhintz.ovpn")},
+    {MODKEY | ControlMask | ShiftMask,
+     XK_F7,
+     spawn,
+     SHCMD("pgrep -f dhintz.ovpn && st -e sshpass -p $(pass show striketech/dhintz) ssh strike")},
+    {MODKEY,
+     XK_F8,
+     spawn,
+     SHCMD("echo 🔄 > /tmp/imapsyncicon_hintz3y; pkill -RTMIN+12 dwmblocks; mw -Y; rm /tmp/imapsyncicon_hintz3y;pkill "
+           "-RTMIN+12 dwmblocks")},
     {MODKEY, XK_F11, spawn, SHCMD("ducksearch")},
 
     {0, XF86XK_MonBrightnessUp, spawn, SHCMD("xbacklight +5")},
