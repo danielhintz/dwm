@@ -340,7 +340,7 @@ static Key keys[] = {
     {MODKEY, XK_f, togglefullscreen, {0}},
     //{ MODKEY|ShiftMask,			XK_f,		togglefullscreen,	{0} },
 
-    //{MODKEY, XK_g, spawn, SHCMD("playmovie")},
+    {MODKEY, XK_g, spawn, SHCMD("signal-desktop")},
     //{MODKEY | ShiftMask, XK_g, spawn, SHCMD("sudo killall steam")},
 
     {MODKEY, XK_h, focustomon, {.i = -1}},
