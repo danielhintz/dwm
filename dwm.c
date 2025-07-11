@@ -1097,7 +1097,8 @@ void focusstack(const Arg* arg)
         return;
 
     for (p = NULL, c = selmon->clients; c && (i || !ISVISIBLE(c) || !c->canfocus);
-         i -= ISVISIBLE(c) ? 1 : 0, p = c, c = c->next);
+         i -= ISVISIBLE(c) ? 1 : 0, p = c, c = c->next)
+        ;
     focus(c ? c : p);
     restack(selmon);
     if (selmon->sel)
@@ -2388,6 +2389,18 @@ int updategeom(void)
                     m->mh = m->wh = unique[i].height;
                     updatebarpos(m);
                 }
+            // TODO(dhintz): DIRTY DIRTY DIRTY DIRTY HACK
+            // If we have three monitors(tv plugged in) we gotta rearrange the monitor linked list
+            if (nn == 3)
+            {
+                Monitor* first = mons;
+                Monitor* second = mons->next;
+                Monitor* third = mons->next->next;
+
+                first->next = third;
+                third->next = second;
+                second->next = NULL;
+            }
         }
         else
         { /* less monitors available nn < n */
