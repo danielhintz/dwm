@@ -56,7 +56,6 @@ static const Rule rules[] = {
        noswallow  canfocus   monitor */
     {"discord", NULL, "Discord", 1 << 4, 0, 0, 0, 1, 1},
     {"steam", NULL, "Steam", 1 << 3, 0, 0, 0, 1, 0},
-    {"Beeper", NULL, NULL, 1 << 4, 0, 0, 0, 1, 1},
     {"Proton Mail Bridge", "protonmail-bridge", "Proton Mail Bridge", 1 << 8, 0,
      0, 0, 1, 1},
     {"Rquickshare", "rquickshare", "RQuickShare", 1 << 7, 0, 0, 0, 1, 1},
@@ -68,7 +67,8 @@ static const Rule rules[] = {
     {NULL, NULL, "Event Tester", 0, 0, 0, 1, 1, -1},
     {NULL, NULL, "FreeRDP: 172.20.237.92", 1 << 1, 0, 0, 1, 1, 0},
     {NULL, NULL, "sshpass", 1 << 0, 0, 0, 1, 1, 0},
-    {NULL, NULL, "Signal", 1 << 4, 0, 0, 1, 1, 0},
+    {NULL, NULL, "Signal", 1 << 4, 0, 0, 1, 1, 1},
+    {"Bluebubbles", "bluebubbles", NULL, 1 << 4, 0, 0, 1, 1, 1},
     {NULL, "spterm", NULL, SPTAG(0), 1, 1, 0, 1, -1},
     {NULL, "spcalc", NULL, SPTAG(1), 1, 1, 0, 1, -1},
 };
@@ -316,8 +316,9 @@ static Key keys[] = {
      SHCMD("teams-for-linux --closeAppOnCross --no-sandbox")},
     {MODKEY | ShiftMask, XK_y, spawn, SHCMD("pkill teams-for")},
 
-    {MODKEY, XK_u, spawn, SHCMD("beeper")},
-    {MODKEY | ShiftMask, XK_u, spawn, SHCMD("killall beeper")},
+    {MODKEY, XK_u, spawn, SHCMD("signal-desktop; bluebubbles")},
+    {MODKEY | ShiftMask, XK_u, spawn,
+     SHCMD("killall signal-desktop bluebubbles")},
 
     {MODKEY, XK_i, spawn, SHCMD("st -e htop")},
     //{ MODKEY|ShiftMask,			XK_i,		spawn,	{.v =
